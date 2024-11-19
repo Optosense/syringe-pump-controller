@@ -8,7 +8,7 @@ GPIO_pins = (-1, -1, -1) # use 1/16 of step
 dir_pin = 15
 step_pin = 14
 
-test_motor = RpiMotorLib.A4988Nema(direction, step, GPIO_pins, "A4988")
+test_motor = RpiMotorLib.A4988Nema(dir_pin, step_pin, GPIO_pins, "A4988")
 
 def main():
     test_motor.motor_go(False, "Full", 200, 0, False, 0)
