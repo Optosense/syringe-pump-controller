@@ -76,7 +76,7 @@ void loop() {
   while (!Serial.available()) {
     // Do nothing, just wait for input
   }
-  float value = Serial.parseFloat();
+  floa`+t value = Serial.parseFloat();
   Serial.println(value);
 
   int steps = value * steps_1ml; //no change!
