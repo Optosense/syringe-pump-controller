@@ -14,7 +14,7 @@
 
 //VARIABLES
 
-
+//B is motor 2 and A is motor 1
 
 AccelStepper motor1(motorInterfaceType, m1StepPin, m1DirPin); //we specify we are using a driver
 AccelStepper motor2(motorInterfaceType, m2StepPin, m2DirPin);
@@ -45,27 +45,37 @@ void setup() {
   preSetup();
   digitalWrite(m1EnablePin, LOW); // LOW to enable motors
   digitalWrite(m2EnablePin, LOW);
-  /*motor1.setMaxSpeed(1000);
+  
+  Serial.begin(9600);                     // set up Serial library at 9600 bps
+  Serial.println("Code start");
+  
+  motor1.setMaxSpeed(1000);
  
-  motor2.setMaxSpeed(1000);*/
+  motor2.setMaxSpeed(1000);
   
 }
 
 void loop() {
-  /*while(motor1.distanceToGo() != 0){
-     motor1.setSpeed(100);
-     motor1.runSpeedToPosition();
-  }
   motor1.move(-200);
   motor2.move(-200);
-  
+  Serial.println("-200");
   while(motor1.distanceToGo() != 0){
      motor1.setSpeed(100);
-     motor2.setSpeed(100);
+     motor1.runSpeedToPosition();
+     motor2.setSpeed(50);
+     motor2.runSpeedToPosition();
+  }
+  delay(2000);
+  motor2.move(200);
+  motor1.move(200);
+  Serial.println("+200");
+  while(motor1.distanceToGo() != 0){
+     motor1.setSpeed(100);
+     motor2.setSpeed(50);
      motor1.runSpeedToPosition();
      motor2.runSpeedToPosition();
      
   }
   delay(2000);
-  */
+  
 }

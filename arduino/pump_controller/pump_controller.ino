@@ -9,6 +9,9 @@
 #define m2DirPin  4
 #define motorInterfaceType 1 // must be set to 1 when using a driver
 
+#define m1EnablePin 8
+#define m2EnablePin 9
+
 //VARIABLES
 
 const int Qv = 2; // debit ml / s
@@ -18,6 +21,7 @@ float currentPosition1ml = 0.0;
 float currentPosition2ml = 0.0;
 
 
+//B is motor 2 and A is motor 1
 AccelStepper motor1(motorInterfaceType, m1StepPin, m1DirPin); //we specify we are using a driver
 AccelStepper motor2(motorInterfaceType, m2StepPin, m2DirPin);
 
@@ -60,75 +64,125 @@ bool amountAllowed(float f1, float f2){
 } 
 
 void setup() {
+
+  preSetup();
+  enableMotors();
+  
   motor1.setMaxSpeed(1000);
   motor2.setMaxSpeed(1000);
-  motor1.setSpeed(500); //fill-in values
-  motor2.setSpeed(500);
 
   Serial.begin(9600);                     // set up Serial library at 9600 bps
   Serial.println("Code start");
-  Serial.println("This demo expects 2 float values. The amount to pull or push from the seringe");
-  Serial.println("Enter data in this style <3.5, 5.75>  positive for pushing into de melangeur, negative for pulling <-3.5, -5.75>");
+  Serial.println("This demo expects 2 float values. The amount to pull or push from the seringe. Both values need to be either positive or negative");
+  Serial.println("Send the first value, enter, then the second value, then enter. ");
   Serial.println();
   //calibrate();
 
 }
 
 void loop() {
- // Serial.println("Start loop");
+  disableMotors();
+  Serial.println("Start loop");
+  Serial.println("Please write data 1: ");
+  Serial.println();
+
+  //this section receives the info from the Raspberry Pi through the Serial
+  while (!Serial.available()) {
+    // Do nothing, just wait for input
+  }
+  floatMotor1 = Serial.parseFloat();
+  Serial.println(floatMotor1);
   
-  //this section receives the info from the Raspberry Pi with the Serial
-  //Serial.println("Please write data : ");
-  //Serial.println();
+  Serial.println("Please write data 2: ");
+  Serial.println();
+  while (!Serial.available()) {
+    // Do nothing, just wait for input
+  }
+  floatMotor2 = Serial.parseFloat();
+  Serial.println(floatMotor1);
+
+  //converting the volume into steps
+  int steps1 = floatMotor1 * steps_1ml; //no change!
+  int steps2 = floatMotor2 * steps_1ml; //no change!
+
+   // v1 and v2 are the respective speeds/debits for each seringue (steps/second)
+  const int t = (floatMotor1 + floatMotor2) / Qv;
+  float v1 = steps1/t;
+  float v2 = steps2/t;
+
+
+  if(amountAllowed(currentPosition1ml, floatMotor1) && (currentPosition2ml, floatMotor2)){
+    enableMotors();
+    currentPosition1ml += floatMotor1;
+    currentPosition2ml += floatMotor2;
   
-  recvWithStartEndMarkers();
-  if (newData == true) {
-    
-    strcpy(tempChars, receivedChars);
-          // this temporary copy is necessary to protect the original data
-          //   because strtok() used in parseData() replaces the commas with \0
-    parseData();
-    showParsedData();
-
-    int steps1 = floatMotor1 * steps_1ml; //no change!
-    int steps2 = floatMotor2 * steps_1ml; //no change!
-
-    // v1 and v2 are the respective speeds/debits for each seringue (steps/second)
-    const int t = (floatMotor1 + floatMotor2) / Qv;
-    float v1 = steps1/t;
-    float v2 = steps2/t;
-
-
-    if(amountAllowed(currentPosition1ml, floatMotor1) && (currentPosition2ml, floatMotor2)){
-      currentPosition1ml += floatMotor1;
-      currentPosition2ml += floatMotor2;
-   
-      motor1.setSpeed(v1);
-      motor2.setSpeed(v2);
       
-      motor1.move(steps1);
-      Serial.println("moving motor 1 steps and speed : " );
-      Serial.println(steps1);
-      Serial.println(v1);
-      motor2.move(steps2);
-      Serial.println("moving motor 2 steps and speed : " );
-      Serial.println(steps2);
-      Serial.println(v2);
   
-      delay(1000);
+    Serial.println("moving motor 1 steps and speed : " );
+    Serial.println(steps1);
+    Serial.println(v1);
+    
+    Serial.println("moving motor 2 steps and speed : " );
+    Serial.println(steps2);
+    Serial.println(v2);
+
+    //we tell the motors the position to move 
+    motor1.move(steps1);
+    motor2.move(steps2);
+
+    //the while runs until they reach the Target Position
+    while((motor1.distanceToGo() != 0) ||( motor1.distanceToGo()!=0)){
+      motor1.setSpeed(v1);
+      motor1.runSpeedToPosition();
+      motor2.setSpeed(v2);
+      motor2.runSpeedToPosition();
     }
-    newData = false;
+  
+    delay(1000);
+    
   }
  
 
   delay(2000); // Add a delay before the next loop iteration
-  //Serial.println("End loop");
+  Serial.println("End loop");
+}
+
+//to avoid problems with the pins
+void preSetup() {
+  // Set pin modes for step and direction
+  pinMode(m1StepPin, OUTPUT);
+  pinMode(m1DirPin, OUTPUT);
+  digitalWrite(m1StepPin, LOW); // Ensure step pin is LOW
+  digitalWrite(m1DirPin, LOW);  // Set direction to a default state
+
+  pinMode(m2StepPin, OUTPUT);
+  pinMode(m2DirPin, OUTPUT);
+  digitalWrite(m2StepPin, LOW);
+  digitalWrite(m2DirPin, LOW);
+
+  pinMode(m1EnablePin, OUTPUT);
+  pinMode(m2EnablePin, OUTPUT);
+  digitalWrite(m1EnablePin, HIGH); // HIGH to disable motors
+  digitalWrite(m2EnablePin, HIGH);
+
+}
+
+void enableMotors(){
+  digitalWrite(m1EnablePin, LOW); // LOW to enable motors
+  digitalWrite(m2EnablePin, LOW);
+  
+}
+
+void disableMotors(){
+  digitalWrite(m1EnablePin, HIGH); // HIGH to disable motors
+  digitalWrite(m2EnablePin, HIGH);
+
 }
 
 
 
 //============ 
-
+/*
 void recvWithStartEndMarkers() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
@@ -184,4 +238,4 @@ void showParsedData() {
     Serial.println(floatMotor1);
     Serial.print("Float 2 ");
     Serial.println(floatMotor2);
-}
+}*/
