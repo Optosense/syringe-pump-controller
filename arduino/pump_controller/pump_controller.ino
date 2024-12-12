@@ -17,44 +17,76 @@
 const int Qv = 2; // debit ml / s
 const int stepsPerRev= 200; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
 const int steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
-float currentPosition1ml = 0.0;
-float currentPosition2ml = 0.0;
+float currentPosition1ml = -12.0;
+float currentPosition2ml = -12.0;
+int buttonState1 = 0; 
+int buttonState2 = 0; 
+
+const int buttonPin1 = 12;
+const int buttonPin2 = 13;
 
 
-//B is motor 2 and A is motor 1
+//Motor 1 is A
+//Motor 2 is B
 AccelStepper motor1(motorInterfaceType, m1StepPin, m1DirPin); //we specify we are using a driver
 AccelStepper motor2(motorInterfaceType, m2StepPin, m2DirPin);
 
 
 
  // variables to hold the parsed data
-float floatMotor1 = 0.0;
-float floatMotor2 = 0.0;
+float floatMotor1 = 0.0; //A
+float floatMotor2 = 0.0; //B
 
 
-//calibrates the seringue to 0ml PROBABY WE WILL USE A BUTTON
-/*
-void calibrate(){
-  int read_value = analogRead(sensor);
-  if(read_value!=0){
-    Serial.println("déja calibré à 0ml");
+//calibrates the seringue to 12ml PROBABY WE WILL USE A BUTTON
+
+void calibrate1(){
+   buttonState1 = digitalRead(buttonPin1);
+   if (buttonState1 == HIGH) {
+    Serial.println("M1 déja calibré à 12ml");
   } 
-  else{
-    while(analogRead(sensor)==0){
-    Serial.println("calibrating...");
-    motor1.move(-2);
-    motor1.run();
+  else {
+    Serial.println("calibrating M1...");
+    
+    enableMotors();
+    while(digitalRead(buttonPin1) == LOW){
+      motor1.setSpeed(100);
+      motor1.runSpeed();
+    }
+    disableMotors();
+    
   }
-  Serial.println("calibré");
-  currentPosition = 0;
+  Serial.println("done");
+  currentPosition1ml = -12.0;
 }
-*/
+
+
+void calibrate2(){
+   buttonState2 = digitalRead(buttonPin2);
+   if (buttonState2 == HIGH) {
+    Serial.println("M2 déja calibré à 12ml");
+  } 
+  else {
+    Serial.println("calibrating M2...");
+    
+    enableMotors();
+    while(digitalRead(buttonPin2) == LOW){
+      motor2.setSpeed(100);
+      motor2.runSpeed();
+    }
+    disableMotors();
+    
+  }
+  Serial.println("done");
+  currentPosition2ml = -12.0;
+}
+
 
 
 //function checks if amount goes over seringue capacity
 bool amountAllowed(float f1, float f2){
 
-  if((f1 + f2) >10 || (f1 + f2 <0)){
+  if((f1 + f2) <-12.0 || (f1 + f2 >0.0)){
   
     Serial.println("Amount not allowed, try again");
     return 0;
@@ -66,7 +98,7 @@ bool amountAllowed(float f1, float f2){
 void setup() {
 
   preSetup();
-  enableMotors();
+  disableMotors();
   
   motor1.setMaxSpeed(1000);
   motor2.setMaxSpeed(1000);
@@ -76,13 +108,30 @@ void setup() {
   Serial.println("This demo expects 2 float values. The amount to pull or push from the seringe. Both values need to be either positive or negative");
   Serial.println("Send the first value, enter, then the second value, then enter. ");
   Serial.println();
-  //calibrate();
+
+  Serial.println("calibrate motors? y/n");
+  Serial.println();
+
+  //this section receives the info from the Raspberry Pi through the Serial
+  while (!Serial.available()) {
+    // Do nothing, just wait for input
+  }
+  char input = Serial.read();
+  if(input == 'y'){
+    calibrate1();
+    calibrate2();
+  }
+  
 
 }
 
 void loop() {
-  disableMotors();
+ 
+  
   Serial.println("Start loop");
+
+
+  
   Serial.println("Please write data 1: ");
   Serial.println();
 
@@ -137,13 +186,12 @@ void loop() {
       motor2.setSpeed(v2);
       motor2.runSpeedToPosition();
     }
-  
-    delay(1000);
+     disableMotors();
     
   }
  
 
-  delay(2000); // Add a delay before the next loop iteration
+  delay(1000); // Add a delay before the next loop iteration
   Serial.println("End loop");
 }
 
@@ -164,6 +212,8 @@ void preSetup() {
   pinMode(m2EnablePin, OUTPUT);
   digitalWrite(m1EnablePin, HIGH); // HIGH to disable motors
   digitalWrite(m2EnablePin, HIGH);
+
+  pinMode(buttonPin1, INPUT);
 
 }
 
