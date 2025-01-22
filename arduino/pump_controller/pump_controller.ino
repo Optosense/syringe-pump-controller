@@ -180,7 +180,7 @@ void loop() {
     motor2.move(steps2);
 
     //the while runs until they reach the Target Position
-    while((motor1.distanceToGo() != 0) ||( motor1.distanceToGo()!=0)){
+    while((motor1.distanceToGo() != 0) ||( motor2.distanceToGo()!=0)){
       motor1.setSpeed(-v1);
       motor1.runSpeedToPosition();
       motor2.setSpeed(-v2);
