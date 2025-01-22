@@ -17,9 +17,9 @@
 
 //VARIABLES
 
-const int Qv = 2; // debit ml / s
-const int stepsPerRev= 3200; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
-const int steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
+const float Qv = 2.0; // debit ml / s
+const int stepsPerRev= 800; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
+const float steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
 float currentPosition1ml = -12.0;
 float currentPosition2ml = -12.0;
 int buttonState1 = 0; 
@@ -50,7 +50,7 @@ void calibrate1(){
     
     enableMotors();
     while(digitalRead(buttonPin1) == HIGH){
-      motor1.setSpeed(-stepsPerRev/2);
+      motor1.setSpeed(-stepsPerRev);
       motor1.runSpeed();
     }
     disableMotors();
@@ -71,7 +71,7 @@ void calibrate2(){
     
     enableMotors();
     while(digitalRead(buttonPin2) == HIGH){
-      motor2.setSpeed(-stepsPerRev/2);
+      motor2.setSpeed(-stepsPerRev);
       motor2.runSpeed();
     }
     disableMotors();
@@ -151,11 +151,11 @@ void loop() {
   Serial.println(floatMotor2);
 
   //converting the volume into steps
-  int steps1 = floatMotor1 * steps_1ml; //no change!
-  int steps2 = floatMotor2 * steps_1ml; //no change!
+  float steps1 = floatMotor1 * steps_1ml; //no change!
+  float steps2 = floatMotor2 * steps_1ml; //no change!
 
    // v1 and v2 are the respective speeds/debits for each seringue (steps/second)
-  const int t = (floatMotor1 + floatMotor2) / Qv;
+  const float t = (floatMotor1 + floatMotor2) / Qv;
   float v1 = steps1/t;
   float v2 = steps2/t;
 
@@ -176,17 +176,18 @@ void loop() {
     Serial.println(v2);
 
     //we tell the motors the position to move 
-    motor1.move(steps1);
-    motor2.move(steps2);
+    motor1.move((int)steps1);
+    motor2.move((int)steps2);
 
     //the while runs until they reach the Target Position
     while((motor1.distanceToGo() != 0) ||( motor2.distanceToGo()!=0)){
-      motor1.setSpeed(-v1);
+      motor1.setSpeed(-v1);  // watch for speed value when its above 1000 step/s
       motor1.runSpeedToPosition();
       motor2.setSpeed(-v2);
       motor2.runSpeedToPosition();
     }
-     disableMotors();
+    
+    disableMotors();
     
   }
  
