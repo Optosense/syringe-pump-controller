@@ -12,18 +12,18 @@
 #define m1EnablePin 8
 #define m2EnablePin 9
 
+#define buttonPin1 12
+#define buttonPin2 13
+
 //VARIABLES
 
 const int Qv = 2; // debit ml / s
-const int stepsPerRev= 200; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
+const int stepsPerRev= 3200; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
 const int steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
 float currentPosition1ml = -12.0;
 float currentPosition2ml = -12.0;
 int buttonState1 = 0; 
 int buttonState2 = 0; 
-
-const int buttonPin1 = 12;
-const int buttonPin2 = 13;
 
 
 //Motor 1 is A
@@ -42,15 +42,15 @@ float floatMotor2 = 0.0; //B
 
 void calibrate1(){
    buttonState1 = digitalRead(buttonPin1);
-   if (buttonState1 == HIGH) {
+   if (buttonState1 == LOW) {
     Serial.println("M1 déja calibré à 12ml");
   } 
   else {
     Serial.println("calibrating M1...");
     
     enableMotors();
-    while(digitalRead(buttonPin1) == LOW){
-      motor1.setSpeed(100);
+    while(digitalRead(buttonPin1) == HIGH){
+      motor1.setSpeed(-1000);
       motor1.runSpeed();
     }
     disableMotors();
@@ -63,15 +63,15 @@ void calibrate1(){
 
 void calibrate2(){
    buttonState2 = digitalRead(buttonPin2);
-   if (buttonState2 == HIGH) {
+   if (buttonState2 == LOW) {
     Serial.println("M2 déja calibré à 12ml");
   } 
   else {
     Serial.println("calibrating M2...");
     
     enableMotors();
-    while(digitalRead(buttonPin2) == LOW){
-      motor2.setSpeed(100);
+    while(digitalRead(buttonPin2) == HIGH){
+      motor2.setSpeed(-1000);
       motor2.runSpeed();
     }
     disableMotors();
@@ -148,7 +148,7 @@ void loop() {
     // Do nothing, just wait for input
   }
   floatMotor2 = Serial.parseFloat();
-  Serial.println(floatMotor1);
+  Serial.println(floatMotor2);
 
   //converting the volume into steps
   int steps1 = floatMotor1 * steps_1ml; //no change!
@@ -181,9 +181,9 @@ void loop() {
 
     //the while runs until they reach the Target Position
     while((motor1.distanceToGo() != 0) ||( motor1.distanceToGo()!=0)){
-      motor1.setSpeed(v1);
+      motor1.setSpeed(-v1);
       motor1.runSpeedToPosition();
-      motor2.setSpeed(v2);
+      motor2.setSpeed(-v2);
       motor2.runSpeedToPosition();
     }
      disableMotors();
@@ -213,7 +213,8 @@ void preSetup() {
   digitalWrite(m1EnablePin, HIGH); // HIGH to disable motors
   digitalWrite(m2EnablePin, HIGH);
 
-  pinMode(buttonPin1, INPUT);
+  pinMode(buttonPin1, INPUT_PULLUP);
+  pinMode(buttonPin2, INPUT_PULLUP);
 
 }
 
