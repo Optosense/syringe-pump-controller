@@ -50,7 +50,7 @@ void calibrate1(){
     
     enableMotors();
     while(digitalRead(buttonPin1) == HIGH){
-      motor1.setSpeed(-1000);
+      motor1.setSpeed(-stepsPerRev/2);
       motor1.runSpeed();
     }
     disableMotors();
@@ -71,7 +71,7 @@ void calibrate2(){
     
     enableMotors();
     while(digitalRead(buttonPin2) == HIGH){
-      motor2.setSpeed(-1000);
+      motor2.setSpeed(-stepsPerRev/2);
       motor2.runSpeed();
     }
     disableMotors();
