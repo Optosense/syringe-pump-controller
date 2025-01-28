@@ -19,6 +19,14 @@
 
 const float Qv = 2.0; // debit ml / s
 const int stepsPerRev= 800; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
+// Setting on the A4988 Driver
+// MS1  MS2  MS3     Microstep resolution   Steps per rev Nema 17:
+// L    L    L        Full step             200
+// H    L    L        Half Step             400
+// L    H    L        Quarter Step          800
+// H    H    L        1/8 Step              1600
+// H    H    H        1/16 Step             3200
+
 const float steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
 float currentPosition1ml = -12.0;
 float currentPosition2ml = -12.0;
@@ -230,64 +238,3 @@ void disableMotors(){
   digitalWrite(m2EnablePin, HIGH);
 
 }
-
-
-
-//============ 
-/*
-void recvWithStartEndMarkers() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char startMarker = '<';
-    char endMarker = '>';
-    char rc;
-
-    while (Serial.available() > 0 && newData == false) {
-        rc = Serial.read();
-
-        if (recvInProgress == true) {
-            if (rc != endMarker) {
-                receivedChars[ndx] = rc;
-                ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
-                }
-            }
-            else {
-                receivedChars[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newData = true;
-            }
-        }
-
-        else if (rc == startMarker) {
-            recvInProgress = true;
-        }
-    }
-}
-
-//============
-
-void parseData() {      // split the data into its parts
-
-    char * strtokIndx; // this is used by strtok() as an index
-
-    strtokIndx = strtok(tempChars,",");      // get the first part - the string
-    floatMotor1 = atof(strtokIndx); // copy it to messageFromPC
- 
-    
-    strtokIndx = strtok(NULL, ",");
-    floatMotor2 = atof(strtokIndx);     // convert this part to a float
-
-}
-
-//============
-
-void showParsedData() {
-    
-    Serial.print("Float 1 ");
-    Serial.println(floatMotor1);
-    Serial.print("Float 2 ");
-    Serial.println(floatMotor2);
-}*/
