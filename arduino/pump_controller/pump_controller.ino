@@ -58,10 +58,10 @@ float floatMotor2 = 0.0; //B
 void calibrate1(){
    buttonState1 = digitalRead(buttonPin1);
    if (buttonState1 == LOW) {
-    Serial.println("M1 déja calibré à 12ml");
+    ;//Serial.println("M1 déja calibré à 12ml");
   } 
   else {
-    Serial.println("calibrating M1...");
+    //Serial.println("calibrating M1...");
     
     enableMotors();
     while(digitalRead(buttonPin1) == HIGH){
@@ -71,7 +71,7 @@ void calibrate1(){
     disableMotors();
     
   }
-  Serial.println("done");
+  //Serial.println("done");
   currentPosition1ml = -12.0;
 }
 
@@ -79,10 +79,10 @@ void calibrate1(){
 void calibrate2(){
    buttonState2 = digitalRead(buttonPin2);
    if (buttonState2 == LOW) {
-    Serial.println("M2 déja calibré à 12ml");
+    ;//Serial.println("M2 déja calibré à 12ml");
   } 
   else {
-    Serial.println("calibrating M2...");
+    // Serial.println("calibrating M2...");
     
     enableMotors();
     while(digitalRead(buttonPin2) == HIGH){
@@ -92,7 +92,7 @@ void calibrate2(){
     disableMotors();
     
   }
-  Serial.println("done");
+  //Serial.println("done");
   currentPosition2ml = -12.0;
 }
 
@@ -119,6 +119,7 @@ void setup() {
   motor2.setMaxSpeed(1000);
 
   Serial.begin(9600);                     // set up Serial library at 9600 bps
+  /*
   Serial.println("Code start");
   Serial.println("This demo expects 2 float values. The amount to pull or push from the seringe. Both values need to be either positive or negative");
   Serial.println("Send the first value, enter, then the second value, then enter. ");
@@ -126,8 +127,13 @@ void setup() {
 
   Serial.println("calibrate motors? y/n");
   Serial.println();
+  */
 
   //this section receives the info from the Raspberry Pi through the Serial
+  //Serial.print("expecting n")
+  while (!Serial);
+
+  /*
   while (!Serial.available()) {
     // Do nothing, just wait for input
   }
@@ -136,34 +142,41 @@ void setup() {
     calibrate1();
     calibrate2();
   }
-  
-
+  */
 }
 
 void loop() {
- 
-  
-  Serial.println("Start loop");
-
-
-  
-  Serial.println("Please write data 1: ");
-  Serial.println();
 
   //this section receives the info from the Raspberry Pi through the Serial
+  /*
   while (!Serial.available()) {
     // Do nothing, just wait for input
   }
   floatMotor1 = Serial.parseFloat();
-  Serial.println(floatMotor1);
   
-  Serial.println("Please write data 2: ");
-  Serial.println();
   while (!Serial.available()) {
     // Do nothing, just wait for input
   }
   floatMotor2 = Serial.parseFloat();
+  */
+  // Expected string format : "y2.5#3.0\n"
+  while (!Serial.available());
+
+  char calibrate_char = Serial.read();
+  if (calibrate_char == 'y') {
+    calibrate1();
+    calibrate2();
+  }
+  
+  floatMotor1 = Serial.parseFloat();
+  Serial.println(floatMotor1);
+  floatMotor2 = Serial.parseFloat();
   Serial.println(floatMotor2);
+
+  if (Serial.available()) {
+    Serial.read(); // consume the extra \n
+  }
+  
 
   //converting the volume into steps
   float steps1 = floatMotor1 * steps_1ml; //no change!
@@ -207,7 +220,7 @@ void loop() {
   }
  
 
-  delay(1000); // Add a delay before the next loop iteration
+  // delay(1000); // Add a delay before the next loop iteration
   Serial.println("End loop");
 }
 
