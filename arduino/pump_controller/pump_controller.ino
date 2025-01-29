@@ -17,13 +17,20 @@
 
 //VARIABLES
 
-const float Qv = 2.0; // debit ml / s
-const int stepsPerRev= 800; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
-const float steps_1ml = stepsPerRev*6/8 ;  //information peut changer avec le nouveau pousse seringe 
+const float Qv = 1; // debit ml / s
+const int stepsPerRev= 828; // 200 full step, 400 half step , 800 1/4, 1600 1/8, 3200 microstep 1/16 
+const float steps_1ml = stepsPerRev*5/8 ;  //information peut changer avec le nouveau pousse seringe 
 float currentPosition1ml = -12.0;
 float currentPosition2ml = -12.0;
 int buttonState1 = 0; 
 int buttonState2 = 0; 
+
+// 6cm -> 12 mL
+// 800step -> 8mm
+
+// 1ml -> 5mm
+
+// steps_1ml = 5*stepsPerRev/8
 
 
 //Motor 1 is A
